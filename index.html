@@ -196,6 +196,43 @@ footer p span{color:var(--gold);opacity:0.6}
 .step-btn.active{background:linear-gradient(135deg,var(--bg4),var(--bg5));border-color:var(--gold2);color:var(--gold3);box-shadow:0 0 8px var(--gold-glow)}
 .step-btn:active{transform:scale(0.96)}
 .qty-field-wrap{display:flex;flex-direction:column}
+
+/* ── 即時時鐘 ── */
+.clock-wrap{text-align:center;margin-top:6px;margin-bottom:4px}
+.clock{font-family:var(--mono);font-size:clamp(18px,4vw,24px);font-weight:700;letter-spacing:0.18em;
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold3) 50%,var(--gold4) 70%,var(--gold3) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:none}
+.clock-label{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:0.16em;margin-top:2px}
+
+/* ── 功能四：三大法人 ── */
+.inst-setup-box{background:#F5EED8;border:1px solid rgba(200,150,12,0.4);border-left:3px solid var(--gold2);border-radius:var(--radius);padding:10px 12px;margin-bottom:14px}
+.inst-setup-box div{font-size:11px;color:#3A2E10;line-height:2;font-family:var(--mono)}
+.inst-setup-box a{color:var(--gold2);text-decoration:none}
+.inst-url-row{display:flex;gap:8px;margin-bottom:12px;align-items:flex-end}
+.inst-url-row input{flex:1}
+.inst-url-row .calc-btn{width:auto;padding:12px 18px;white-space:nowrap;font-size:14px}
+.inst-table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--gold-border)}
+.inst-table-wrap::-webkit-scrollbar{height:4px}
+.inst-table-wrap::-webkit-scrollbar-track{background:var(--bg3)}
+.inst-table-wrap::-webkit-scrollbar-thumb{background:var(--gold-border2);border-radius:2px}
+.inst-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono)}
+.inst-table thead tr{background:linear-gradient(135deg,var(--bg4),var(--bg5));border-bottom:1px solid var(--gold-border2)}
+.inst-table thead th{padding:10px 8px;color:var(--gold2);font-weight:500;letter-spacing:0.06em;text-align:right;white-space:nowrap}
+.inst-table thead th:first-child{text-align:center}
+.inst-table tbody tr:nth-child(odd){background:#F5EED8}
+.inst-table tbody tr:nth-child(even){background:#EDE4C8}
+.inst-table tbody tr:hover{background:#FFE8A0}
+.inst-table tbody td{padding:8px 8px;color:#2A1E08;text-align:right;white-space:nowrap;font-weight:500;font-size:12px}
+.inst-table tbody td:first-child{text-align:center;color:#6B4800;font-weight:700}
+.inst-pos{color:#C0392B!important;font-weight:700!important}
+.inst-neg{color:#1E7A3A!important;font-weight:700!important}
+.inst-loading{text-align:center;padding:24px;color:var(--text3);font-family:var(--mono);font-size:13px}
+.inst-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+@media(min-width:480px){.inst-summary{grid-template-columns:repeat(4,1fr)}}
+.inst-sum-card{background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--radius);padding:10px 8px;text-align:center}
+.inst-sum-label{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:0.06em;margin-bottom:4px}
+.inst-sum-val{font-size:16px;font-weight:700;font-family:var(--mono)}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--gold-border2);border-radius:2px}
 </style>
 </head>
@@ -205,6 +242,10 @@ footer p span{color:var(--gold);opacity:0.6}
     <div class="crown">♛</div>
     <h1>STOCK CALCULATOR</h1>
     <div class="header-line"><div class="header-badge">台股獲利計算工具</div></div>
+    <div class="clock-wrap">
+      <div class="clock" id="live-clock">--:--:--</div>
+      <div class="clock-label">UTC+8 台北時間</div>
+    </div>
     <div class="header-sub">新光證券｜獲利 · 漲跌停 · 均價</div>
   </header>
   <div class="ornament">◆ ◇ ◆</div>
@@ -212,6 +253,7 @@ footer p span{color:var(--gold);opacity:0.6}
     <button class="tab active" onclick="switchTab(0)">◈ 獲利計算</button>
     <button class="tab" onclick="switchTab(1)">◈ 漲跌停</button>
     <button class="tab" onclick="switchTab(2)">◈ 均價計算</button>
+    <button class="tab" onclick="switchTab(3)" style="display:none">◈ 法人買賣</button>
   </div>
 
   <!-- 功能一 -->
@@ -367,6 +409,58 @@ footer p span{color:var(--gold);opacity:0.6}
       </div>
     </div>
   </div>
+  
+  <!-- 功能四 -->
+  <div class="section" id="sec3" style="display:none">
+    <div class="card">
+      <div class="broker-label">查詢設定</div>
+      <div class="inst-setup-box">
+        <div>⚙️ 請先完成 Cloud Function 部署，取得你的 API 網址</div>
+        <div>📖 參考部署指南：<a href="#" onclick="alert('請查看 cloud_function_deploy_guide.md')">部署說明</a></div>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Cloud Function 網址</label>
+        <input type="text" id="cf-url" placeholder="https://asia-east1-xxx.cloudfunctions.net/get-institutional-investors" style="font-size:13px">
+      </div>
+      <div class="inst-url-row">
+        <div class="field" style="margin-bottom:0;flex:1">
+          <label>股票代號</label>
+          <input type="text" id="inst-stock-id" placeholder="例：2330" inputmode="numeric" maxlength="6">
+        </div>
+        <button class="calc-btn" style="margin-bottom:0" onclick="fetchInstitutional()">▶ 查詢</button>
+      </div>
+    </div>
+
+    <div id="inst-result" style="display:none">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:14px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:8px">
+            <div style="width:3px;height:16px;background:linear-gradient(180deg,var(--gold3),var(--gold));border-radius:2px"></div>
+            近30日三大法人買賣超
+          </div>
+          <div id="inst-stock-name" style="font-size:12px;font-family:var(--mono);color:var(--gold2)"></div>
+        </div>
+        <div class="inst-summary" id="inst-summary"></div>
+        <div class="inst-table-wrap">
+          <table class="inst-table">
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>外資</th>
+                <th>投信</th>
+                <th>自營(自買)</th>
+                <th>自營(避險)</th>
+                <th>合計</th>
+              </tr>
+            </thead>
+            <tbody id="inst-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="inst-error" style="display:none;padding:12px 16px;background:var(--red-light);border:1px solid rgba(192,57,43,0.3);border-radius:var(--radius);font-size:13px;color:var(--red);font-family:var(--mono);margin-bottom:14px"></div>
+  </div>
+
   <footer>
     <p><span>◆</span> © 2026 Van Cheng．版權所有 <span>◆</span></p>
   </footer>
@@ -434,6 +528,91 @@ function adjustQty(id, dir){
   const step = avgStepMap[id] || 1000;
   el.value = Math.max(1,(parseInt(el.value)||0) + dir * step);
   liveCalcAvg();
+}
+
+
+// ── 即時時鐘 UTC+8 ──
+function updateClock(){
+  const now = new Date();
+  const utc8 = new Date(now.getTime() + (8 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
+  const hh = String(utc8.getHours()).padStart(2,'0');
+  const mm = String(utc8.getMinutes()).padStart(2,'0');
+  const ss = String(utc8.getSeconds()).padStart(2,'0');
+  const el = document.getElementById('live-clock');
+  if(el) el.textContent = hh + ':' + mm + ':' + ss;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+
+// ── 功能四：三大法人買賣超 ──
+async function fetchInstitutional(){
+  const cfUrl = document.getElementById('cf-url').value.trim();
+  const stockId = document.getElementById('inst-stock-id').value.trim();
+  const resultEl = document.getElementById('inst-result');
+  const errorEl = document.getElementById('inst-error');
+
+  if(!cfUrl){ alert('請輸入 Cloud Function 網址'); return; }
+  if(!stockId){ alert('請輸入股票代號'); return; }
+
+  resultEl.style.display='none';
+  errorEl.style.display='none';
+  document.getElementById('inst-tbody').innerHTML='<tr><td colspan="6" class="inst-loading">⏳ 查詢中，請稍候...</td></tr>';
+  resultEl.style.display='block';
+
+  try{
+    const url = cfUrl.replace(/\/$/,'') + '?stock=' + encodeURIComponent(stockId);
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if(data.error){
+      resultEl.style.display='none';
+      errorEl.textContent='❌ ' + data.error;
+      errorEl.style.display='block';
+      return;
+    }
+
+    document.getElementById('inst-stock-name').textContent = stockId + '　共 ' + data.count + ' 筆';
+
+    // 彙總
+    const total_foreign = data.data.reduce((s,r)=>s+r.foreign,0);
+    const total_trust = data.data.reduce((s,r)=>s+r.investment_trust,0);
+    const total_dealer = data.data.reduce((s,r)=>s+(r.dealer_self+r.dealer_hedge),0);
+    const total_all = data.data.reduce((s,r)=>s+r.total,0);
+
+    function fmtN(n){
+      const s = Math.abs(n).toLocaleString('zh-TW');
+      return (n>=0?'+':'-') + s;
+    }
+    function colorClass(n){ return n>=0?'inst-pos':'inst-neg'; }
+
+    document.getElementById('inst-summary').innerHTML = [
+      {label:'外資合計', val:total_foreign},
+      {label:'投信合計', val:total_trust},
+      {label:'自營合計', val:total_dealer},
+      {label:'三大合計', val:total_all}
+    ].map(item=>`
+      <div class="inst-sum-card">
+        <div class="inst-sum-label">${item.label}</div>
+        <div class="inst-sum-val ${colorClass(item.val)}">${fmtN(item.val)}</div>
+      </div>`).join('');
+
+    // 明細表格
+    document.getElementById('inst-tbody').innerHTML = data.data.map(row=>`
+      <tr>
+        <td>${row.date}</td>
+        <td class="${colorClass(row.foreign)}">${fmtN(row.foreign)}</td>
+        <td class="${colorClass(row.investment_trust)}">${fmtN(row.investment_trust)}</td>
+        <td class="${colorClass(row.dealer_self)}">${fmtN(row.dealer_self)}</td>
+        <td class="${colorClass(row.dealer_hedge)}">${fmtN(row.dealer_hedge)}</td>
+        <td class="${colorClass(row.total)}">${fmtN(row.total)}</td>
+      </tr>`).join('');
+
+  } catch(err){
+    resultEl.style.display='none';
+    errorEl.textContent='❌ 連線失敗：' + err.message + '　請確認 Cloud Function 網址是否正確';
+    errorEl.style.display='block';
+  }
 }
 
 function renderBrokerInfo(b){document.getElementById('broker-info').innerHTML=brokerCfg[b].info.map(l=>`<div>${l}</div>`).join('');}
