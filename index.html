@@ -1987,13 +1987,36 @@ setInterval(() => {
   }
 }, 5000);
 
+async function getDtFugleKey(){
+  // 優先順序：使用者自己填的 Key → Cloud Function 金鑰池自動取得
+  const userKey = getFugleKey();
+  if(userKey) return userKey;
+
+  const cfUrl = document.getElementById('cf-url').value.trim();
+  const cfKey = document.getElementById('cf-key')?.value || '';
+  if(!cfUrl) return '';
+
+  try {
+    const resp = await fetch(cfUrl.replace(/\/$/,'') + '?action=manage_keys&sub=get_one&key=' + cfKey);
+    const data = await resp.json();
+    if(data.success && data.key) return data.key;
+  } catch(e){}
+  return '';
+}
+
 async function connectAndMonitorAll(){
   if(!dtCandidates.length){
     alert('請先載入候選名單');
     return;
   }
-  const apiKey = getFugleKey();
-  if(!apiKey){ alert('請先在上方設定 Fugle API Key'); return; }
+
+  setDtWsStatus('connecting', '取得金鑰中...');
+  const apiKey = await getDtFugleKey();
+  if(!apiKey){
+    setDtWsStatus('disconnected', '未連線');
+    alert('無法取得 Fugle Key，請在上方輸入，或確認金鑰池已有可用的 Key');
+    return;
+  }
 
   if(dtWS && dtWS.readyState === WebSocket.OPEN){
     // 已連線，直接訂閱所有候選股
